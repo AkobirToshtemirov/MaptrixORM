@@ -1,5 +1,6 @@
 package com.maptrix.orm.dao;
 
+import java.sql.Connection;
 import java.util.List;
 
 public interface GenericDao<T, ID> {
@@ -12,4 +13,6 @@ public interface GenericDao<T, ID> {
     T update(T entity);
 
     void delete(T entity);
+
+    void setConnection(Connection connection);
 }

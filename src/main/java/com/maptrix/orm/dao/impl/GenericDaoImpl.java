@@ -1,6 +1,7 @@
 package com.maptrix.orm.dao.impl;
 
 import com.maptrix.orm.dao.GenericDao;
+import com.maptrix.orm.exceptions.DataAccessException;
 import com.maptrix.orm.meta.MetaModel;
 import com.maptrix.orm.sql.SqlGenerator;
 import com.maptrix.orm.util.DataSourceUtil;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
+    private Connection connection;
     private final MetaModel<T> metaModel;
     private final SqlGenerator<T> sqlGenerator;
 
@@ -30,7 +32,7 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
             ResultSet rs = stmt.executeQuery();
             return mapResultSetToEntity(rs);
         } catch (SQLException | ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to find entity by ID", e);
         }
     }
 
@@ -46,7 +48,7 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
             }
             return results;
         } catch (SQLException | ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to find all entities", e);
         }
     }
 
@@ -63,7 +65,7 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
             }
             return entity;
         } catch (SQLException | ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to create entity", e);
         }
     }
 
@@ -76,7 +78,7 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
             stmt.executeUpdate();
             return entity;
         } catch (SQLException | ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to update entity", e);
         }
     }
 
@@ -88,7 +90,7 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
             stmt.setObject(1, getEntityId(entity));
             stmt.executeUpdate();
         } catch (SQLException | ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Failed to delete entity", e);
         }
     }
 
@@ -114,7 +116,17 @@ public class GenericDaoImpl<T, ID> implements GenericDao<T, ID> {
         ReflectionUtil.bindParameters(stmt, entity, fields);
     }
 
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
     private Connection getConnection() throws SQLException {
-        return DataSourceUtil.getConnection();
+        if (this.connection != null) {
+            if (this.connection.isClosed()) {
+                throw new SQLException("Provided connection is closed.");
+            }
+            return this.connection;
+        }
+        throw new IllegalStateException("Connection is not set. This operation requires a managed connection from EntityManager.");
     }
 }
