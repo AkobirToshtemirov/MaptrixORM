@@ -1,5 +1,7 @@
 package com.maptrix.orm.entitymanager;
 
+import java.util.List;
+
 public interface EntityManager<T> {
     T find(Class<T> entityClass, Object primaryKey);
 
@@ -14,4 +16,7 @@ public interface EntityManager<T> {
     void commit();
 
     void rollback();
+
+    void initializeDatabaseSchema(List<Class<?>> entityClasses);
+
 }
