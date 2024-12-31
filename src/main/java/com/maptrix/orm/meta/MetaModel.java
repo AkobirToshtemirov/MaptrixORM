@@ -31,6 +31,27 @@ public class MetaModel<T> {
         return new MetaModel<>(clazz);
     }
 
+    public String generateCreateTableSQL() {
+        StringBuilder sql = new StringBuilder("CREATE TABLE ");
+        sql.append(getTableName()).append(" (");
+        List<String> columnDefinitions = new ArrayList<>();
+
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Column.class)) {
+                ColumnField columnField = new ColumnField(field);
+                columnDefinitions.add(columnField.getColumnName() + " " + columnField.getColumnType());
+            }
+            if (field.isAnnotationPresent(Id.class)) {
+                PrimaryKeyField primaryKeyField = new PrimaryKeyField(field);
+                columnDefinitions.add(primaryKeyField.getColumnName() + " " + primaryKeyField.getColumnType() + " PRIMARY KEY");
+            }
+        }
+
+        sql.append(String.join(", ", columnDefinitions));
+        sql.append(");");
+        return sql.toString();
+    }
+
     private void processFields() {
         for (Field field : clazz.getDeclaredFields()) {
             fields.add(field);

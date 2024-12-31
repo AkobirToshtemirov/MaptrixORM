@@ -14,4 +14,5 @@ public interface EntityManager<T> {
     void commit();
 
     void rollback();
+
 }
