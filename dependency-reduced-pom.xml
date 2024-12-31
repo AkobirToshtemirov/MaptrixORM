@@ -7,17 +7,6 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.6.0</version>
         <executions>
@@ -36,11 +25,12 @@
                   <pattern>org.yaml.snakeyaml</pattern>
                   <shadedPattern>com.maptrix.shaded.snakeyaml</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.reflections.reflections</pattern>
+                  <shadedPattern>com.maptrix.shaded.reflections</shadedPattern>
+                </relocation>
               </relocations>
               <transformers>
-                <transformer>
-                  <mainClass>your.main.class.if.applicable</mainClass>
-                </transformer>
                 <transformer />
               </transformers>
             </configuration>

@@ -1,17 +1,12 @@
 package com.maptrix.orm.entitymanager.impl;
 
-import com.maptrix.orm.annotations.Entity;
 import com.maptrix.orm.dao.GenericDao;
 import com.maptrix.orm.entitymanager.EntityManager;
-import com.maptrix.orm.exceptions.DataAccessException;
 import com.maptrix.orm.exceptions.TransactionException;
-import com.maptrix.orm.meta.MetaModel;
 import com.maptrix.orm.util.DataSourceUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
 import java.util.logging.Logger;
 
 public class EntityManagerImpl<T> implements EntityManager<T> {
@@ -95,25 +90,6 @@ public class EntityManagerImpl<T> implements EntityManager<T> {
             throw new TransactionException("Could not rollback transaction", e);
         } finally {
             cleanup();
-        }
-    }
-
-    @Override
-    public void initializeDatabaseSchema(List<Class<?>> entityClasses) {
-        try (Connection connection = DataSourceUtil.getConnection();
-             Statement stmt = connection.createStatement()) {
-
-            for (Class<?> clazz : entityClasses) {
-                if (clazz.isAnnotationPresent(Entity.class)) {
-                    MetaModel<?> metaModel = MetaModel.of(clazz);
-                    String sql = metaModel.generateCreateTableSQL();
-                    System.out.println("Executing SQL: " + sql);
-                    stmt.execute(sql);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new DataAccessException("Failed to create database schema", e);
         }
     }
 

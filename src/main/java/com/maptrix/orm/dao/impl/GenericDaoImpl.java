@@ -4,7 +4,6 @@ import com.maptrix.orm.dao.GenericDao;
 import com.maptrix.orm.exceptions.DataAccessException;
 import com.maptrix.orm.meta.MetaModel;
 import com.maptrix.orm.sql.SqlGenerator;
-import com.maptrix.orm.util.DataSourceUtil;
 import com.maptrix.orm.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
