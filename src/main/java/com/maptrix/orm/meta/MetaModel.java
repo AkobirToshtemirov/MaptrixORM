@@ -39,23 +39,29 @@ public class MetaModel<T> {
         boolean hasPrimaryKey = false;
 
         for (Field field : clazz.getDeclaredFields()) {
+            ColumnField columnField = new ColumnField(field);
+            field.setAccessible(true);
+            String columnName, columnType;
+            columnName = field.getName();
+            columnType = columnField.getColumnType();
+
             if (field.isAnnotationPresent(Column.class)) {
-                ColumnField columnField = new ColumnField(field);
-                String columnDefinition = columnField.getColumnName() + " " + columnField.getColumnType();
-                if (field.isAnnotationPresent(Id.class)) {
-                    columnDefinition += " PRIMARY KEY";
-                    hasPrimaryKey = true;
-                }
-                columnDefinitions.add(columnDefinition);
-            } else if (field.isAnnotationPresent(Id.class)) {
-                PrimaryKeyField primaryKeyField = new PrimaryKeyField(field);
-                columnDefinitions.add(primaryKeyField.getColumnName() + " " + primaryKeyField.getColumnType() + " PRIMARY KEY");
+                Column colAnnotation = field.getAnnotation(Column.class);
+                columnName = colAnnotation.name().isEmpty() ? columnName : colAnnotation.name();
+            }
+
+            String columnDefinition = columnName + " " + columnType;
+
+            if (field.isAnnotationPresent(Id.class)) {
+                columnDefinition += " PRIMARY KEY";
                 hasPrimaryKey = true;
             }
+
+            columnDefinitions.add(columnDefinition);
         }
 
         if (!hasPrimaryKey) {
-            throw new IllegalStateException("Table must have a primary key defined with @Id annotation.");
+            throw new IllegalStateException(clazz.getSimpleName() + " must have a primary key defined with @Id annotation.");
         }
 
         sql.append(String.join(", ", columnDefinitions));
@@ -67,9 +73,8 @@ public class MetaModel<T> {
     private void processFields() {
         for (Field field : clazz.getDeclaredFields()) {
             fields.add(field);
-            if (field.isAnnotationPresent(Column.class)) {
-                columns.add(new ColumnField(field));
-            } else if (field.isAnnotationPresent(Id.class)) {
+            columns.add(new ColumnField(field));
+            if (field.isAnnotationPresent(Id.class)) {
                 if (primaryKey != null) {
                     throw new IllegalStateException("Multiple primary keys found for " + clazz.getName());
                 }
